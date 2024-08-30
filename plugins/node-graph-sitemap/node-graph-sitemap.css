@@ -1,0 +1,40 @@
+#graph-container {
+    border: 2px solid #8B5A2B; /* Brownish border for an old look */
+    background: 
+        url('https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/6208f106-928e-47bb-80b1-ce55b9e82b98/dyu8dx-956f96a9-d374-454b-8d7c-d16a916cb9b8.jpg') center center / cover, /* Parchment texture */
+        -webkit-gradient(linear, left top, right bottom, from(rgba(235, 220, 178, 0.9)), to(rgba(215, 198, 161, 0.9))), /* Gradient for older webkit browsers */
+        -moz-linear-gradient(135deg, rgba(235, 220, 178, 0.9), rgba(215, 198, 161, 0.9)), /* Firefox */
+        -o-linear-gradient(135deg, rgba(235, 220, 178, 0.9), rgba(215, 198, 161, 0.9)), /* Opera */
+        -ms-linear-gradient(135deg, rgba(235, 220, 178, 0.9), rgba(215, 198, 161, 0.9)), /* IE10 */
+        linear-gradient(135deg, rgba(235, 220, 178, 0.9), rgba(215, 198, 161, 0.9)); /* Standard */
+    border-radius: 8px;
+    position: relative;
+    overflow: hidden; /* Prevent overflow from affecting the look */
+}
+
+.film-grain-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: url('https://example.com/path/to/film-grain.png') repeat; /* Grain texture */
+    opacity: 0.2; /* Adjust opacity for subtle effect */
+    pointer-events: none; /* Allow interactions below the overlay */
+}
+
+button {
+    font-family: 'Courier New', monospace; /* Use a typewriter-style font */
+    background-color: #8B5A2B; /* Old paper button style */
+    color: #ffffff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    padding: 5px 10px;
+    margin: 5px;
+    transition: background-color 0.3s ease; /* Smooth hover effect */
+}
+
+button:hover {
+    background-color: #6F4E37; /* Darker brown on hover */
+}

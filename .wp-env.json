@@ -1,0 +1,11 @@
+{
+    "plugins": [
+      "./plugins/node-graph-sitemap"
+    ],
+    "mappings": {
+    },
+    "config": {
+      "WP_DEBUG": true
+    }
+  }
+  
