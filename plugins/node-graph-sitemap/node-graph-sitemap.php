@@ -57,10 +57,19 @@ add_action( 'wp_enqueue_scripts', 'node_graph_sitemap_enqueue_assets' );
 function node_graph_sitemap_shortcode() {
     ob_start();
     ?>
-    <div id="graph-container" style="position: relative;">
-        <button id="fullscreen-btn" class="graph-btn" style="top: 10px; right: 80px;">Full Screen</button>
-        <button id="reset-view-btn" class="graph-btn" style="top: 10px; right: 10px;">Reset</button>
-        <div id="cy" style="width: 100%; height: 600px;"></div>
+    <div id="parchment">
+        <div id="graph-container">
+            <button id="fullscreen-btn" class="graph-btn">Full Screen</button>
+            <button id="reset-view-btn" class="graph-btn">Reset</button>
+            <div id="cy" style="width: 100%; height: 600px;"></div>
+        </div>
+        <!-- SVG filter for parchment effect -->
+        <svg style="display: none;">
+            <filter id="wavy2">
+                <feTurbulence x="0" y="0" baseFrequency="0.02" numOctaves="5" seed="1"></feTurbulence>
+                <feDisplacementMap in="SourceGraphic" scale="20" />
+            </filter>
+        </svg>
     </div>
     <?php
     return ob_get_clean();

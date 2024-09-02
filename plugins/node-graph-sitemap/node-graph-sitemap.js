@@ -94,27 +94,33 @@ document.addEventListener('DOMContentLoaded', () => {
         window.open(evt.target.id(), '_blank');
     });
 
-    // Apply vintage look class and add film grain overlay
-    const cyContainer = document.getElementById('cy');
-    cyContainer.classList.add('vintage-look');
-
-    const filmGrainOverlay = document.createElement('div');
-    filmGrainOverlay.className = 'film-grain-overlay';
-    cyContainer.appendChild(filmGrainOverlay);
-
     // Full-Screen Toggle Logic
+    const cyContainer = document.getElementById('cy');
     const fullscreenBtn = document.getElementById('fullscreen-btn');
+
     fullscreenBtn.addEventListener('click', () => {
         if (!document.fullscreenElement) {
-            cyContainer.requestFullscreen().catch(err => console.error(`Error entering full-screen mode: ${err.message}`));
+            cyContainer.requestFullscreen()
+                .then(() => {
+                    cy.resize(); // Adjust the graph size after entering full screen
+                    cy.fit();
+                    cy.center();
+                })
+                .catch(err => console.error(`Error entering full-screen mode: ${err.message}`));
         } else {
-            document.exitFullscreen();
+            document.exitFullscreen()
+                .then(() => {
+                    cy.resize(); // Adjust the graph size after exiting full screen
+                    cy.fit();
+                    cy.center();
+                })
+                .catch(err => console.error(`Error exiting full-screen mode: ${err.message}`));
         }
     });
 
     // Handle resizing when entering/exiting full-screen
     document.addEventListener('fullscreenchange', () => {
-        cy.resize();
+        cy.resize(); // Resize graph on full-screen toggle
         cy.fit();
         cy.center();
     });

@@ -1,30 +1,22 @@
-#graph-container {
-    border: 2px solid #8B5A2B; /* Brownish border for an old look */
-    background: 
-        url('https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/6208f106-928e-47bb-80b1-ce55b9e82b98/dyu8dx-956f96a9-d374-454b-8d7c-d16a916cb9b8.jpg') center center / cover, /* Parchment texture */
-        -webkit-gradient(linear, left top, right bottom, from(rgba(235, 220, 178, 0.9)), to(rgba(215, 198, 161, 0.9))), /* Gradient for older webkit browsers */
-        -moz-linear-gradient(135deg, rgba(235, 220, 178, 0.9), rgba(215, 198, 161, 0.9)), /* Firefox */
-        -o-linear-gradient(135deg, rgba(235, 220, 178, 0.9), rgba(215, 198, 161, 0.9)), /* Opera */
-        -ms-linear-gradient(135deg, rgba(235, 220, 178, 0.9), rgba(215, 198, 161, 0.9)), /* IE10 */
-        linear-gradient(135deg, rgba(235, 220, 178, 0.9), rgba(215, 198, 161, 0.9)); /* Standard */
-    border-radius: 8px;
-    position: relative;
-    overflow: hidden; /* Prevent overflow from affecting the look */
+#parchment {
+    display: flex;
+    flex-direction: column; /* Ensures content stacks vertically */
+    width: 100%; /* Fully responsive width */
+    max-width: 1000px; /* Max width to prevent it from getting too large */
+    min-height: 50vh; /* A flexible minimum height */
+    margin: 2em auto; /* Centers the component within its container */
+    padding: 2em; /* Adjust padding for a balanced look */
+    box-shadow: 2px 3px 20px rgba(0, 0, 0, 0.5), 0 0 60px rgba(138, 77, 15, 0.5) inset; /* Soft, subtle shadows */
+    background: #fffef0;
+    filter: url(#wavy2); /* SVG filter for texture */
+    border-radius: 8px; /* Rounded edges for a softer look */
+    overflow: hidden; /* Prevent content overflow */
+    box-sizing: border-box; /* Include padding and border in the element's total width and height */
 }
 
-.film-grain-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: url('https://example.com/path/to/film-grain.png') repeat; /* Grain texture */
-    opacity: 0.2; /* Adjust opacity for subtle effect */
-    pointer-events: none; /* Allow interactions below the overlay */
-}
-
+/* Button styles remain responsive and adaptive */
 button {
-    font-family: 'Courier New', monospace; /* Use a typewriter-style font */
+    font-family: 'Courier New', monospace; /* Typewriter-style font */
     background-color: #8B5A2B; /* Old paper button style */
     color: #ffffff;
     border: none;
@@ -33,6 +25,7 @@ button {
     padding: 5px 10px;
     margin: 5px;
     transition: background-color 0.3s ease; /* Smooth hover effect */
+    align-self: flex-start; /* Keep buttons aligned neatly at the start */
 }
 
 button:hover {
