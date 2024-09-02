@@ -82,66 +82,55 @@ add_shortcode( 'node_graph_sitemap', 'node_graph_sitemap_shortcode' );
  * @return array Site map data including nodes and edges.
  */
 function node_graph_sitemap_get_site_map() {
-    // Check for a cached version to minimize database hits
-    $cached_data = get_transient( 'node_graph_sitemap_data' );
-    if ( $cached_data ) {
-        return $cached_data;
-    }
+    $nodes = [];
+    $edges = [];
+    $posts = get_posts(array('numberposts' => -1, 'post_type' => array('post', 'page', 'attachment', 'custom_post_type')));
 
-    $nodes = array();
-    $edges = array();
-    $posts = get_posts( array( 'numberposts' => -1, 'post_type' => array( 'post', 'page' ) ) );
+    foreach ($posts as $post) {
+        $url   = get_permalink($post->ID);
+        $title = get_the_title($post->ID);
+        $type  = get_post_type($post->ID);
 
-    foreach ( $posts as $post ) {
-        $url   = get_permalink( $post->ID );
-        $title = get_the_title( $post->ID );
-        $type  = get_post_type( $post->ID );
-
-        // Add node for this post/page with type
-        $nodes[] = array( 'id' => $url, 'label' => $title, 'type' => $type );
+        // Add node for this post/page/attachment
+        $nodes[] = array('id' => $url, 'label' => $title, 'type' => $type);
 
         // Load the post content into DOMDocument
         $dom = new DOMDocument();
-        libxml_use_internal_errors( true ); // Suppress parsing errors
-        $dom->loadHTML( $post->post_content );
+        libxml_use_internal_errors(true);
+        $dom->loadHTML($post->post_content);
         libxml_clear_errors();
 
-        // Find all anchor links
-        $xpath = new DOMXPath( $dom );
-        $links = $xpath->query( '//a[@href]' );
+        // Find all links
+        $xpath = new DOMXPath($dom);
+        $links = $xpath->query('//a[@href]');
 
-        foreach ( $links as $link ) {
-            $href = $link->getAttribute( 'href' );
+        foreach ($links as $link) {
+            $href = $link->getAttribute('href');
 
-            // Only add edges to internal links
-            if ( strpos( $href, home_url() ) === 0 ) {
-                $edges[] = array( 'source' => $url, 'target' => $href );
-            }
-        }
-
-        // Additional: Check for links in clickable elements
-        $clickables = $xpath->query( '//*[@onclick or @data-href or @href]' );
-
-        foreach ( $clickables as $clickable ) {
-            $href = $clickable->getAttribute( 'href' ) ?: $clickable->getAttribute( 'data-href' );
-
-            // Check onclick for URL patterns
-            if ( ! $href && $clickable->hasAttribute( 'onclick' ) ) {
-                preg_match( '/https?:\/\/[^\s"\']+/', $clickable->getAttribute( 'onclick' ), $matches );
-                $href = $matches[0] ?? '';
+            // Add nodes for linked media/attachments if they're internal
+            if (strpos($href, home_url()) === 0 && !in_array($href, array_column($nodes, 'id'))) {
+                // Determine if the link is to an attachment
+                $attachment_id = attachment_url_to_postid($href);
+                if ($attachment_id) {
+                    $attachment_title = get_the_title($attachment_id);
+                    $nodes[] = array('id' => $href, 'label' => $attachment_title, 'type' => 'attachment');
+                } else {
+                    // Add link as a generic node if not specifically handled
+                    $nodes[] = array('id' => $href, 'label' => basename($href), 'type' => 'link');
+                }
             }
 
-            // Only add edges to internal links
-            if ( $href && strpos( $href, home_url() ) === 0 ) {
-                $edges[] = array( 'source' => $url, 'target' => $href );
+            // Only add edges to existing nodes
+            if (in_array($href, array_column($nodes, 'id'))) {
+                $edges[] = array('source' => $url, 'target' => $href);
             }
         }
     }
 
-    // Cache the data for 12 hours
-    $data = array( 'nodes' => $nodes, 'edges' => $edges );
-    set_transient( 'node_graph_sitemap_data', $data, 12 * HOUR_IN_SECONDS );
+    $data = array('nodes' => $nodes, 'edges' => $edges);
+    set_transient('node_graph_sitemap_data', $data, 12 * HOUR_IN_SECONDS);
 
     return $data;
 }
+
 ?>

@@ -52,6 +52,34 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             },
             {
+                selector: 'node[type = "attachment"]',
+                style: {
+                    ...baseNodeStyles,
+                    'background-image': `url(${nodeGraphData.pluginUrl}assets/icon-base-image.png)`
+                }
+            },
+            {
+                selector: 'node[type = "custom"]', // Example for custom post types
+                style: {
+                    ...baseNodeStyles,
+                    'background-image': `url(${nodeGraphData.pluginUrl}assets/icon-base-thing.png)`
+                }
+            },
+            {
+                selector: 'node[type = "category"]', // If categories are included
+                style: {
+                    ...baseNodeStyles,
+                    'background-image': `url(${nodeGraphData.pluginUrl}assets/icon-base-thing.png)`
+                }
+            },
+            {
+                selector: 'node[type = "tag"]', // If tags are included
+                style: {
+                    ...baseNodeStyles,
+                    'background-image': `url(${nodeGraphData.pluginUrl}assets/icon-base-thing.png)`
+                }
+            },
+            {
                 selector: 'edge',
                 style: {
                     'width': 3,
@@ -83,7 +111,7 @@ document.addEventListener('DOMContentLoaded', () => {
         maxZoom: 2,
         wheelSensitivity: 0.1
     });
-
+    
     // Re-run layout on node drag to keep the graph tidy
     cy.on('dragfree', 'node', () => {
         cy.layout({ name: 'cose', animate: true, fit: true }).run();
