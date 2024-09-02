@@ -3,9 +3,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Prepare nodes and edges from localized data
     nodeGraphData.nodes.nodes.forEach(node => {
-        console.log(node)
+        console.log(node);
+
+
+        let icon = node.icon ? `url(${node.icon})` : `url(${nodeGraphData.pluginUrl}assets/icons/default-icon-for-post.png)`; // Use custom icon if available
+        // if type = link, use the link icon
+        if (node.type === 'link') {
+            icon = `url(${nodeGraphData.pluginUrl}assets/icons/default-icon-for-link.png)`;
+        }
+
+        // Add nodes with correct data and styles directly
         elements.push({
-            data: { id: node.id, label: node.label, type: node.type }
+            data: { id: node.id, label: node.label, type: node.type },
+            style: {
+                'background-image': icon,
+                'background-fit': 'cover',
+                'background-image-opacity': 1,
+                'width': 40,
+                'height': 40,
+                'label': 'data(label)',
+                'text-valign': 'bottom',
+                'text-halign': 'center',
+                'font-size': '10px',
+                'color': '#ffffff',
+                'text-outline-width': 1,
+                'text-outline-color': '#333'
+            }
         });
     });
 
@@ -38,50 +61,36 @@ document.addEventListener('DOMContentLoaded', () => {
             {
                 selector: 'node[type = "post"]',
                 style: {
-                    ...baseNodeStyles,
-                    'background-image': `url(${nodeGraphData.pluginUrl}assets/icon-base-scroll.png)`
-                }
-            },
-            {
-                selector: 'node[type = "link"]',
-                style: {
-                    ...baseNodeStyles,
-                    'background-image': `url(${nodeGraphData.pluginUrl}assets/icon-base-link.png)`
+                    'background-image': `url(${nodeGraphData.pluginUrl}assets/icon-base-scroll.png)`,
+                    ...baseNodeStyles
                 }
             },
             {
                 selector: 'node[type = "page"]',
                 style: {
-                    ...baseNodeStyles,
-                    'background-image': `url(${nodeGraphData.pluginUrl}assets/icon-base-globe.png)`
+                    'background-image': `url(${nodeGraphData.pluginUrl}assets/icon-base-globe.png)`,
+                    ...baseNodeStyles
                 }
             },
             {
                 selector: 'node[type = "attachment"]',
                 style: {
-                    ...baseNodeStyles,
-                    'background-image': `url(${nodeGraphData.pluginUrl}assets/icon-base-image.png)`
+                    'background-image': `url(${nodeGraphData.pluginUrl}assets/icon-attachment.png)`,
+                    ...baseNodeStyles
+                }
+            },
+            {
+                selector: 'node[type = "link"]',
+                style: {
+                    'background-image': `url(${nodeGraphData.pluginUrl}assets/icon-link.png)`,
+                    ...baseNodeStyles
                 }
             },
             {
                 selector: 'node[type = "custom"]', // Example for custom post types
                 style: {
-                    ...baseNodeStyles,
-                    'background-image': `url(${nodeGraphData.pluginUrl}assets/icon-base-thing.png)`
-                }
-            },
-            {
-                selector: 'node[type = "category"]', // If categories are included
-                style: {
-                    ...baseNodeStyles,
-                    'background-image': `url(${nodeGraphData.pluginUrl}assets/icon-base-thing.png)`
-                }
-            },
-            {
-                selector: 'node[type = "tag"]', // If tags are included
-                style: {
-                    ...baseNodeStyles,
-                    'background-image': `url(${nodeGraphData.pluginUrl}assets/icon-base-thing.png)`
+                    'background-image': `url(${nodeGraphData.pluginUrl}assets/icon-custom.png)`,
+                    ...baseNodeStyles
                 }
             },
             {
@@ -116,7 +125,7 @@ document.addEventListener('DOMContentLoaded', () => {
         maxZoom: 2,
         wheelSensitivity: 0.1
     });
-    
+
     // Re-run layout on node drag to keep the graph tidy
     cy.on('dragfree', 'node', () => {
         cy.layout({ name: 'cose', animate: true, fit: true }).run();
@@ -164,4 +173,13 @@ document.addEventListener('DOMContentLoaded', () => {
         cy.fit();
         cy.center();
     });
+
+    jQuery(document).ready(function($) {
+        if ($('.js-ignore-pages').length > 0) {
+            $('.js-ignore-pages').select2(); // Initialize select2 on the dropdown
+        } else {
+            console.error('Select2 target element not found');
+        }
+    });
+    
 });
