@@ -53,6 +53,8 @@ function node_graph_sitemap_enqueue_admin_scripts() {
         'select2', // Handle
         'https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css' // Source URL
     );
+
+    wp_enqueue_media();
 }
 add_action('admin_enqueue_scripts', 'node_graph_sitemap_enqueue_admin_scripts');
 ?>

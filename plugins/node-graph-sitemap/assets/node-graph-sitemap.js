@@ -33,9 +33,17 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     nodeGraphData.nodes.edges.forEach(edge => {
-        elements.push({
-            data: { source: edge.source, target: edge.target }
-        });
+        // Check if both source and target nodes exist before creating an edge
+        const sourceExists = elements.some(el => el.data.id === edge.source);
+        const targetExists = elements.some(el => el.data.id === edge.target);
+    
+        if (sourceExists && targetExists) {
+            elements.push({
+                data: { source: edge.source, target: edge.target }
+            });
+        } else {
+            console.warn(`Skipping edge creation for missing nodes: ${edge.source} -> ${edge.target}`);
+        }
     });
 
     // Define base styles for nodes

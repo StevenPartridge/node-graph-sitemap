@@ -1,13 +1,26 @@
 <?php
-// Retrieve the site map data for nodes and edges
+/**
+ * Retrieves the site map data for nodes and edges, representing the internal link structure of the site.
+ *
+ * @return array An array containing nodes and edges representing the site map.
+ */
 function node_graph_sitemap_get_site_map() {
     $nodes = [];
     $edges = [];
 
-    // Retrieve settings
-    $ignored_pages = explode("\n", get_option('node_graph_sitemap_ignored_pages', ''));
-    $ignored_pages = array_map('trim', $ignored_pages);
+    // Retrieve and safely handle plugin settings for ignored links and options
+    $ignored_pages_option = get_option('node_graph_sitemap_ignored_pages', '');
 
+    // Ensure the retrieved option is a string before using explode
+    if (is_string($ignored_pages_option)) {
+        $ignored_pages = array_map('trim', explode("\n", $ignored_pages_option));
+    } elseif (is_array($ignored_pages_option)) {
+        $ignored_pages = $ignored_pages_option; // Use the array as is if it's already an array
+    } else {
+        $ignored_pages = []; // Fallback to an empty array if unexpected type
+    }
+
+    // Retrieve other settings
     $ignore_external = get_option('node_graph_sitemap_ignore_external', false);
     $ignore_media = get_option('node_graph_sitemap_ignore_media', false);
     $ignore_self = get_option('node_graph_sitemap_ignore_self', false);
@@ -15,93 +28,107 @@ function node_graph_sitemap_get_site_map() {
     $ignore_login = get_option('node_graph_sitemap_ignore_login', false);
     $ignore_categories_tags = get_option('node_graph_sitemap_ignore_categories_tags', false);
 
+    // Fetch all relevant posts, pages, attachments, and custom post types
     $posts = get_posts(array('numberposts' => -1, 'post_type' => array('post', 'page', 'attachment', 'custom_post_type')));
 
     foreach ($posts as $post) {
         $url = get_permalink($post->ID);
-        
+
+        // Skip ignored pages
         if (in_array($url, $ignored_pages)) {
             continue;
         }
 
+        // Prepare node data
         $title = get_the_title($post->ID);
-        $type  = get_post_type($post->ID);
+        $type = get_post_type($post->ID);
         $plugin_url = plugins_url('../', __FILE__);
         $icon_url = isset($custom_icons[$type]) ? $custom_icons[$type] : "{$plugin_url}assets/icons/default-icon-for-{$type}.png";
 
+        // Add the post/page/attachment as a node
         $nodes[] = array('id' => $url, 'label' => $title, 'type' => $type, 'icon' => $icon_url);
 
+        // Load the post content into DOMDocument for link extraction
         $dom = new DOMDocument();
-        libxml_use_internal_errors(true);
+        libxml_use_internal_errors(true); // Suppress HTML parsing errors
         $dom->loadHTML($post->post_content);
         libxml_clear_errors();
 
+        // Use XPath to extract all anchor tags with href attributes
         $xpath = new DOMXPath($dom);
         $links = $xpath->query('//a[@href]');
 
         foreach ($links as $link) {
             $href = $link->getAttribute('href');
 
+            // Apply various ignore rules based on plugin settings
             if ($ignore_external && strpos($href, home_url()) === false) {
-                continue;
+                continue; // Ignore external links
             }
-
             if ($ignore_media && preg_match('/\.(jpg|jpeg|png|gif|pdf|mp4|mp3|avi)$/i', $href)) {
-                continue;
+                continue; // Ignore media links
             }
-
             if ($ignore_self && $href === $url) {
-                continue;
+                continue; // Ignore self-referential links
             }
-
             if ($ignore_admin && strpos($href, admin_url()) === 0) {
-                continue;
+                continue; // Ignore admin links
             }
-
             if ($ignore_login && (strpos($href, wp_login_url()) === 0 || strpos($href, wp_logout_url()) === 0)) {
-                continue;
+                continue; // Ignore login/logout links
             }
 
-            // Check if the link points to a category or tag archive and ignore if applicable
-            if ($ignore_categories_tags) {
-                $is_category = false;
-                $is_tag = false;
-
-                // Check if the link is a category link by iterating through all categories
-                foreach (get_categories() as $category) {
-                    if ($href === get_category_link($category->term_id)) {
-                        $is_category = true;
-                        break;
-                    }
-                }
-
-                // Check if the link is a tag link by iterating through all tags
-                foreach (get_tags() as $tag) {
-                    if ($href === get_tag_link($tag->term_id)) {
-                        $is_tag = true;
-                        break;
-                    }
-                }
-
-                // Skip if it's a category or tag link
-                if ($is_category || $is_tag) {
-                    continue;
-                }
+            // Check for and optionally ignore category or tag archive links
+            if ($ignore_categories_tags && (is_category_link($href) || is_tag_link($href))) {
+                continue; // Ignore category and tag links
             }
 
+            // Add new nodes for internal links not already in the list
             if (strpos($href, home_url()) === 0 && !in_array($href, array_column($nodes, 'id'))) {
                 $nodes[] = array('id' => $href, 'label' => basename($href), 'type' => 'link');
             }
 
+            // Add edges only if both nodes (source and target) exist
             if (in_array($href, array_column($nodes, 'id'))) {
                 $edges[] = array('source' => $url, 'target' => $href);
             }
         }
     }
 
+    // Cache the site map data to improve performance
     $data = array('nodes' => $nodes, 'edges' => $edges);
     set_transient('node_graph_sitemap_data', $data, 12 * HOUR_IN_SECONDS);
 
     return $data;
+}
+
+/**
+ * Helper function to determine if a URL is a category link.
+ *
+ * @param string $url The URL to check.
+ * @return bool True if the URL is a category link, false otherwise.
+ */
+function is_category_link($url) {
+    foreach (get_categories() as $category) {
+        if ($url === get_category_link($category->term_id)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+/**
+ * Helper function to determine if a URL is a tag link.
+ *
+ * @param string $url The URL to check.
+ * @return bool True if the URL is a tag link, false otherwise.
+ */
+function is_tag_link($url) {
+    foreach (get_tags() as $tag) {
+        if ($url === get_tag_link($tag->term_id)) {
+            return true;
+        }
+    }
+    return false;
 }
 ?>

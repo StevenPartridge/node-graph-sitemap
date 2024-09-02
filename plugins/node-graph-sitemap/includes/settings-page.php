@@ -26,17 +26,33 @@ function node_graph_sitemap_register_settings() {
 }
 add_action('admin_init', 'node_graph_sitemap_register_settings');
 
-// Settings page callback with multi-select dropdown
+// Settings page callback with multi-select dropdown and media library integration
 function node_graph_sitemap_settings_page() {
     $ignored_pages = get_option('node_graph_sitemap_ignored_pages', array());
     if (!is_array($ignored_pages)) {
         $ignored_pages = array();
     }
+    // Set the default icons with paths from the plugin assets
+    $plugin_url = plugins_url('../', __FILE__);
+    $default_icons = array(
+        'attachment' => "{$plugin_url}assets/icons/default-icon-for-attachment.png",
+        'custom_post_type' => "{$plugin_url}assets/icons/default-icon-for-custom_post_type.png",
+        'link' => "{$plugin_url}assets/icons/default-icon-for-link.png",
+        'page' => "{$plugin_url}assets/icons/default-icon-for-page.png",
+        'post' => "{$plugin_url}assets/icons/default-icon-for-post.png"
+    );
 
-    $custom_icons = get_option('node_graph_sitemap_custom_icons', '{}');
-    $custom_icons = json_decode($custom_icons, true);
-    if (json_last_error() !== JSON_ERROR_NONE) {
-        $custom_icons = '{}';
+    // Retrieve the custom icons option and ensure it is an array
+    $custom_icons = get_option('node_graph_sitemap_custom_icons', $default_icons);
+
+    // Check if the retrieved option is a string and attempt to decode it as JSON
+    if (is_string($custom_icons)) {
+        $custom_icons = json_decode($custom_icons, true);
+    }
+
+    // If JSON decoding failed or the result is not an array, fallback to defaults
+    if (!is_array($custom_icons)) {
+        $custom_icons = $default_icons;
     }
 
     $ignore_external = get_option('node_graph_sitemap_ignore_external', false);
@@ -100,19 +116,47 @@ function node_graph_sitemap_settings_page() {
             </label><br>
 
             <h2>Custom Icons</h2>
-            <textarea name="node_graph_sitemap_custom_icons" rows="10" style="width: 100%;"><?php echo esc_textarea(json_encode($custom_icons, JSON_PRETTY_PRINT)); ?></textarea>
-            <p>Specify custom icons in JSON format. Example: {"post": "icon-url.png", "page": "icon-url.png"}</p>
+            <?php foreach ($custom_icons as $type => $icon_url) : ?>
+                <div>
+                    <label><?php echo ucfirst($type); ?> Icon</label><br>
+                    <input type="text" name="node_graph_sitemap_custom_icons[<?php echo esc_attr($type); ?>]" value="<?php echo esc_url($icon_url); ?>" style="width: 70%;" />
+                    <button type="button" class="button js-select-icon" data-target="input[name='node_graph_sitemap_custom_icons[<?php echo esc_attr($type); ?>]']">Select Icon</button>
+                    <?php if ($icon_url): ?>
+                        <img src="<?php echo esc_url($icon_url); ?>" alt="<?php echo esc_attr($type); ?> icon" style="max-width: 50px; vertical-align: middle;" />
+                    <?php endif; ?>
+                </div>
+            <?php endforeach; ?>
 
             <?php submit_button(); ?>
         </form>
 
         <script>
             jQuery(document).ready(function($) {
+                // Initialize Select2 for ignored pages
                 if ($.fn.select2) {
-                    $('.js-ignore-pages').select2(); // Initialize select2 on the dropdown
+                    $('.js-ignore-pages').select2();
                 } else {
                     console.error('Select2 library is not loaded.');
                 }
+
+                // Media library selection
+                $('.js-select-icon').on('click', function() {
+                    var button = $(this);
+                    var targetInput = button.data('target');
+                    var frame = wp.media({
+                        title: 'Select or Upload Media',
+                        button: { text: 'Use this icon' },
+                        library: { type: 'image' },
+                        multiple: false
+                    });
+
+                    frame.on('select', function() {
+                        var attachment = frame.state().get('selection').first().toJSON();
+                        $(targetInput).val(attachment.url);
+                    });
+
+                    frame.open();
+                });
             });
         </script>
     </div>
