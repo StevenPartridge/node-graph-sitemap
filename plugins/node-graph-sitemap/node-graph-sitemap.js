@@ -3,18 +3,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Prepare nodes and edges from localized data
     nodeGraphData.nodes.nodes.forEach(node => {
+        console.log(node)
         elements.push({
             data: { id: node.id, label: node.label, type: node.type }
         });
     });
 
     nodeGraphData.nodes.edges.forEach(edge => {
-        // Exclude edges that point to wp-admin
-        if (!edge.target.includes('wp-admin')) {
-            elements.push({
-                data: { source: edge.source, target: edge.target }
-            });
-        }
+        elements.push({
+            data: { source: edge.source, target: edge.target }
+        });
     });
 
     // Define base styles for nodes
@@ -42,6 +40,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 style: {
                     ...baseNodeStyles,
                     'background-image': `url(${nodeGraphData.pluginUrl}assets/icon-base-scroll.png)`
+                }
+            },
+            {
+                selector: 'node[type = "link"]',
+                style: {
+                    ...baseNodeStyles,
+                    'background-image': `url(${nodeGraphData.pluginUrl}assets/icon-base-link.png)`
                 }
             },
             {
