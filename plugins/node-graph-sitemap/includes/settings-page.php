@@ -23,15 +23,19 @@ function node_graph_sitemap_register_settings() {
     register_setting('node_graph_sitemap_options', 'node_graph_sitemap_ignore_admin');
     register_setting('node_graph_sitemap_options', 'node_graph_sitemap_ignore_login');
     register_setting('node_graph_sitemap_options', 'node_graph_sitemap_ignore_categories_tags');
+    register_setting('node_graph_sitemap_options', 'node_graph_sitemap_logging_level');
 }
 add_action('admin_init', 'node_graph_sitemap_register_settings');
 
 // Settings page callback with multi-select dropdown and media library integration
 function node_graph_sitemap_settings_page() {
+
     $ignored_pages = get_option('node_graph_sitemap_ignored_pages', array());
+    
     if (!is_array($ignored_pages)) {
         $ignored_pages = array();
     }
+    
     // Set the default icons with paths from the plugin assets
     $plugin_url = plugins_url('../', __FILE__);
     $default_icons = array(
@@ -126,6 +130,13 @@ function node_graph_sitemap_settings_page() {
                     <?php endif; ?>
                 </div>
             <?php endforeach; ?>
+            <h2>Logging Level</h2>
+            <select name="node_graph_sitemap_logging_level">
+                <option value="error" <?php selected($logging_level, 'error'); ?>>Error (default, errors only)</option>
+                <option value="debug" <?php selected($logging_level, 'debug'); ?>>Debug (verbose, includes warnings and logs)</option>
+                <option value="info" <?php selected($logging_level, 'info'); ?>>Info (most verbose, includes everything)</option>
+            </select>
+            <p>Select the level of logging. "Error" will show only errors, "Debug" will show more details including warnings, and "Info" will show all log messages including info logs.</p>
 
             <?php submit_button(); ?>
         </form>

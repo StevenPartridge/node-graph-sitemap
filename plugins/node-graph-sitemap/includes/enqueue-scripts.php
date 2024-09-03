@@ -3,37 +3,55 @@
  * Enqueue necessary scripts and styles for the front-end.
  */
 function node_graph_sitemap_enqueue_assets() {
-    // Check if we are on the front-end and the specific conditions where the graph is needed
-    if (!is_admin()) { // Remove specific page checks if the graph needs to be rendered globally
+    if (!is_admin()) {
 
-        // Enqueue Cytoscape.js library for creating the graph
+        // Enqueue Cytoscape.js library
         wp_enqueue_script(
-            'cytoscape', // Handle
-            'https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.30.2/cytoscape.min.js', // Source URL
-            array(), // Dependencies
-            null, // Version (null to skip versioning)
-            true // Load in footer
+            'node-graph-sitemap-cytoscape', 
+            'https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.30.2/cytoscape.min.js', 
+            array(), 
+            null, 
+            true 
         );
+
+        // Enqueue the Logger script
+        wp_enqueue_script(
+            'node-graph-sitemap-logger', 
+            plugins_url('../assets/logger.js', __FILE__), 
+            array(), 
+            null, 
+            true 
+        );
+
+        // Set the Logger script and main script as modules
+        add_filter('script_loader_tag', function($tag, $handle, $src) {
+            if (in_array($handle, ['node-graph-sitemap-logger', 'node-graph-sitemap-script'])) {
+                return '<script type="module" src="' . esc_url($src) . '"></script>';
+            }
+            return $tag;
+        }, 10, 3);
 
         // Enqueue custom JavaScript file for the plugin's front-end functionality
         wp_enqueue_script(
-            'node-graph-sitemap-script', // Handle
-            plugins_url('../assets/node-graph-sitemap.js', __FILE__), // Source URL (adjusted path)
-            array('cytoscape', 'jquery'), // Dependencies
-            null, // Version
-            true // Load in footer
+            'node-graph-sitemap-script', 
+            plugins_url('../assets/node-graph-sitemap.js', __FILE__), 
+            array('node-graph-sitemap-cytoscape', 'node-graph-sitemap-logger', 'jquery'), 
+            null, 
+            true 
         );
 
         // Enqueue custom CSS file for the plugin's front-end styling
         wp_enqueue_style(
-            'node-graph-sitemap-style', // Handle
-            plugins_url('../assets/node-graph-sitemap.css', __FILE__) // Source URL
+            'node-graph-sitemap-style', 
+            plugins_url('../assets/node-graph-sitemap.css', __FILE__) 
         );
 
-        // Localize script to pass PHP data to JavaScript
+        // Localize script data
+        $logging_level = get_option('node_graph_sitemap_logging_level', 'error'); 
         wp_localize_script('node-graph-sitemap-script', 'nodeGraphData', array(
-            'nodes'     => node_graph_sitemap_get_site_map(), // Retrieve the site map data
-            'pluginUrl' => plugins_url('../', __FILE__), // Base URL for plugin assets
+            'nodes' => node_graph_sitemap_get_site_map(), 
+            'pluginUrl' => plugins_url('../', __FILE__), 
+            'loggingLevel' => $logging_level, 
         ));
     }
 }
