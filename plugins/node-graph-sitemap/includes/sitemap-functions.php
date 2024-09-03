@@ -30,7 +30,7 @@ function node_graph_sitemap_get_site_map() {
         'post' => "{$plugin_url}assets/icons/default-icon-for-post.png"
     );
 
-    $custom_icons = get_option('node_graph_sitemap_custom_icons', $default_icons);
+    $custom_icons = get_option('node_graph_sitemap_custom_icons', '{}');
 
     // Check if the retrieved option is a string and attempt to decode it as JSON
     if (is_string($custom_icons)) {
@@ -39,8 +39,14 @@ function node_graph_sitemap_get_site_map() {
 
     // If JSON decoding failed or the result is not an array, fallback to defaults
     if (!is_array($custom_icons)) {
-        $custom_icons = $default_icons;
+        $custom_icons = [];
     }
+
+    // Merge the default icons with custom icons to ensure all types are covered
+    $custom_icons = array_merge($default_icons, $custom_icons);
+
+    // Debugging to ensure the correct structure of the custom icons
+    error_log(print_r($custom_icons, true)); // Logs to WordPress debug log
 
     // Retrieve other settings
     $ignore_external = get_option('node_graph_sitemap_ignore_external', false);
@@ -64,7 +70,7 @@ function node_graph_sitemap_get_site_map() {
         // Prepare node data
         $title = get_the_title($post->ID);
         $type = get_post_type($post->ID);
-        print_r($custom_icons);
+
         // Determine the icon URL, using custom icons if available, otherwise fallback to default icons
         $icon_url = isset($custom_icons[$type]) ? $custom_icons[$type] : $default_icons[$type];
 
@@ -108,7 +114,7 @@ function node_graph_sitemap_get_site_map() {
 
             // Add new nodes for internal links not already in the list
             if (strpos($href, home_url()) === 0 && !in_array($href, array_column($nodes, 'id'))) {
-                $nodes[] = array('id' => $href, 'label' => basename($href), 'type' => 'link', 'icon' => $icon_url);
+                $nodes[] = array('id' => $href, 'label' => basename($href), 'type' => 'link', 'icon' => $default_icons['link']);
             }
 
             // Add edges only if both nodes (source and target) exist

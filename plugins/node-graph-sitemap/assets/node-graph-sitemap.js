@@ -4,7 +4,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Prepare nodes and edges from localized data
     nodeGraphData.nodes.nodes.forEach(node => {
-        console.log(node)
         // Add nodes with correct data and styles directly
         const icon = node.icon ? node.icon : nodeGraphData.pluginUrl + `assets/icons/default-icon-for-${node.type}.png`;
         if (!nodeIcons[node.type]) {
