@@ -20,6 +20,28 @@ function node_graph_sitemap_get_site_map() {
         $ignored_pages = []; // Fallback to an empty array if unexpected type
     }
 
+    // Retrieve custom icons from settings and ensure it is an array
+    $plugin_url = plugins_url('../', __FILE__);
+    $default_icons = array(
+        'attachment' => "{$plugin_url}assets/icons/default-icon-for-attachment.png",
+        'custom_post_type' => "{$plugin_url}assets/icons/default-icon-for-custom_post_type.png",
+        'link' => "{$plugin_url}assets/icons/default-icon-for-link.png",
+        'page' => "{$plugin_url}assets/icons/default-icon-for-page.png",
+        'post' => "{$plugin_url}assets/icons/default-icon-for-post.png"
+    );
+
+    $custom_icons = get_option('node_graph_sitemap_custom_icons', $default_icons);
+
+    // Check if the retrieved option is a string and attempt to decode it as JSON
+    if (is_string($custom_icons)) {
+        $custom_icons = json_decode($custom_icons, true);
+    }
+
+    // If JSON decoding failed or the result is not an array, fallback to defaults
+    if (!is_array($custom_icons)) {
+        $custom_icons = $default_icons;
+    }
+
     // Retrieve other settings
     $ignore_external = get_option('node_graph_sitemap_ignore_external', false);
     $ignore_media = get_option('node_graph_sitemap_ignore_media', false);
@@ -42,8 +64,9 @@ function node_graph_sitemap_get_site_map() {
         // Prepare node data
         $title = get_the_title($post->ID);
         $type = get_post_type($post->ID);
-        $plugin_url = plugins_url('../', __FILE__);
-        $icon_url = isset($custom_icons[$type]) ? $custom_icons[$type] : "{$plugin_url}assets/icons/default-icon-for-{$type}.png";
+        print_r($custom_icons);
+        // Determine the icon URL, using custom icons if available, otherwise fallback to default icons
+        $icon_url = isset($custom_icons[$type]) ? $custom_icons[$type] : $default_icons[$type];
 
         // Add the post/page/attachment as a node
         $nodes[] = array('id' => $url, 'label' => $title, 'type' => $type, 'icon' => $icon_url);
@@ -85,7 +108,7 @@ function node_graph_sitemap_get_site_map() {
 
             // Add new nodes for internal links not already in the list
             if (strpos($href, home_url()) === 0 && !in_array($href, array_column($nodes, 'id'))) {
-                $nodes[] = array('id' => $href, 'label' => basename($href), 'type' => 'link');
+                $nodes[] = array('id' => $href, 'label' => basename($href), 'type' => 'link', 'icon' => $icon_url);
             }
 
             // Add edges only if both nodes (source and target) exist

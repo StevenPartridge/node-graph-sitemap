@@ -1,34 +1,18 @@
 document.addEventListener('DOMContentLoaded', () => {
     const elements = [];
+    const nodeIcons = {};
 
     // Prepare nodes and edges from localized data
     nodeGraphData.nodes.nodes.forEach(node => {
-        console.log(node);
-
-
-        let icon = node.icon ? `url(${node.icon})` : `url(${nodeGraphData.pluginUrl}assets/icons/default-icon-for-post.png)`; // Use custom icon if available
-        // if type = link, use the link icon
-        if (node.type === 'link') {
-            icon = `url(${nodeGraphData.pluginUrl}assets/icons/default-icon-for-link.png)`;
+        console.log(node)
+        // Add nodes with correct data and styles directly
+        const icon = node.icon ? node.icon : nodeGraphData.pluginUrl + `assets/icons/default-icon-for-${node.type}.png`;
+        if (!nodeIcons[node.type]) {
+            nodeIcons[node.type] = icon;
         }
 
-        // Add nodes with correct data and styles directly
         elements.push({
-            data: { id: node.id, label: node.label, type: node.type },
-            style: {
-                'background-image': icon,
-                'background-fit': 'cover',
-                'background-image-opacity': 1,
-                'width': 40,
-                'height': 40,
-                'label': 'data(label)',
-                'text-valign': 'bottom',
-                'text-halign': 'center',
-                'font-size': '10px',
-                'color': '#ffffff',
-                'text-outline-width': 1,
-                'text-outline-color': '#333'
-            }
+            data: { id: node.id, label: node.label, type: node.type }
         });
     });
 
@@ -69,35 +53,35 @@ document.addEventListener('DOMContentLoaded', () => {
             {
                 selector: 'node[type = "post"]',
                 style: {
-                    'background-image': `url(${nodeGraphData.pluginUrl}assets/icon-base-scroll.png)`,
+                    'background-image': `url(${nodeIcons.post})`,
                     ...baseNodeStyles
                 }
             },
             {
                 selector: 'node[type = "page"]',
                 style: {
-                    'background-image': `url(${nodeGraphData.pluginUrl}assets/icon-base-globe.png)`,
+                    'background-image': `url(${nodeIcons.page})`,
                     ...baseNodeStyles
                 }
             },
             {
                 selector: 'node[type = "attachment"]',
                 style: {
-                    'background-image': `url(${nodeGraphData.pluginUrl}assets/icon-attachment.png)`,
+                    'background-image': `url(${nodeIcons.attachment})`,
                     ...baseNodeStyles
                 }
             },
             {
                 selector: 'node[type = "link"]',
                 style: {
-                    'background-image': `url(${nodeGraphData.pluginUrl}assets/icon-link.png)`,
+                    'background-image': `url(${nodeIcons.link})`,
                     ...baseNodeStyles
                 }
             },
             {
-                selector: 'node[type = "custom"]', // Example for custom post types
+                selector: 'node[type = "custom"]',
                 style: {
-                    'background-image': `url(${nodeGraphData.pluginUrl}assets/icon-custom.png)`,
+                    'background-image': `url(${nodeIcons.custom})`,
                     ...baseNodeStyles
                 }
             },
@@ -182,11 +166,15 @@ document.addEventListener('DOMContentLoaded', () => {
         cy.center();
     });
 
+    // In your custom-script.js or inline script
     jQuery(document).ready(function($) {
-        if ($('.js-ignore-pages').length > 0) {
-            $('.js-ignore-pages').select2(); // Initialize select2 on the dropdown
+        var $ignorePages = $('.js-ignore-pages');
+        
+        // Check if the target element exists before initializing Select2
+        if ($ignorePages.length > 0) {
+            $ignorePages.select2(); // Initialize Select2 on the dropdown
         } else {
-            console.error('Select2 target element not found');
+            console.warn('Select2 target element not found');
         }
     });
     
