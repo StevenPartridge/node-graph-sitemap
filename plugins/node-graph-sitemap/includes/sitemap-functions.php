@@ -8,6 +8,12 @@ function node_graph_sitemap_get_site_map() {
     $nodes = [];
     $edges = [];
 
+    // Check if the site map data is cached and return it if available
+    $data = get_transient('node_graph_sitemap_data');
+    if ($data) {
+        return $data;
+    }
+
     // Retrieve and safely handle plugin settings for ignored links and options
     $ignored_pages_option = get_option('node_graph_sitemap_ignored_pages', '');
 
@@ -114,7 +120,7 @@ function node_graph_sitemap_get_site_map() {
 
             // Add new nodes for internal links not already in the list
             if (strpos($href, home_url()) === 0 && !in_array($href, array_column($nodes, 'id'))) {
-                $nodes[] = array('id' => $href, 'label' => basename($href), 'type' => 'link', 'icon' => $default_icons['link']);
+                $nodes[] = array('id' => $href, 'label' => basename($href), 'type' => 'link', 'icon' => $custom_icons['link']);
             }
 
             // Add edges only if both nodes (source and target) exist
@@ -126,7 +132,7 @@ function node_graph_sitemap_get_site_map() {
 
     // Cache the site map data to improve performance
     $data = array('nodes' => $nodes, 'edges' => $edges);
-    set_transient('node_graph_sitemap_data', $data, 12 * HOUR_IN_SECONDS);
+    set_transient('node_graph_sitemap_data', $data, 15 * MINUTE_IN_SECONDS);
 
     return $data;
 }
