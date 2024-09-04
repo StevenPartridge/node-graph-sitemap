@@ -15,17 +15,32 @@ add_action('admin_menu', 'node_graph_sitemap_add_admin_menu');
 
 // Register additional settings for ignore scenarios
 function node_graph_sitemap_register_settings() {
-    register_setting('node_graph_sitemap_options', 'node_graph_sitemap_ignored_pages');
-    register_setting('node_graph_sitemap_options', 'node_graph_sitemap_custom_icons');
-    register_setting('node_graph_sitemap_options', 'node_graph_sitemap_ignore_external');
-    register_setting('node_graph_sitemap_options', 'node_graph_sitemap_ignore_media');
-    register_setting('node_graph_sitemap_options', 'node_graph_sitemap_ignore_self');
-    register_setting('node_graph_sitemap_options', 'node_graph_sitemap_ignore_admin');
-    register_setting('node_graph_sitemap_options', 'node_graph_sitemap_ignore_login');
-    register_setting('node_graph_sitemap_options', 'node_graph_sitemap_ignore_categories_tags');
-    register_setting('node_graph_sitemap_options', 'node_graph_sitemap_logging_level');
+    $settings = [
+        'node_graph_sitemap_ignored_pages',
+        'node_graph_sitemap_custom_icons',
+        'node_graph_sitemap_ignore_external',
+        'node_graph_sitemap_ignore_media',
+        'node_graph_sitemap_ignore_self',
+        'node_graph_sitemap_ignore_admin',
+        'node_graph_sitemap_ignore_login',
+        'node_graph_sitemap_ignore_categories_tags',
+        'node_graph_sitemap_logging_level'
+    ];
+    
+    foreach ($settings as $setting) {
+        register_setting('node_graph_sitemap_options', $setting);
+        // Hook into each setting update to flush the cache
+        add_action("update_option_{$setting}", 'node_graph_sitemap_flush_cache');
+    }
 }
 add_action('admin_init', 'node_graph_sitemap_register_settings');
+
+/**
+ * Flushes the cached site map data when settings are updated.
+ */
+function node_graph_sitemap_flush_cache() {
+    delete_transient('node_graph_sitemap_data');
+}
 
 // Settings page callback with multi-select dropdown and media library integration
 function node_graph_sitemap_settings_page() {
