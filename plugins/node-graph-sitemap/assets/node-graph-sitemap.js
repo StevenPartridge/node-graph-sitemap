@@ -124,8 +124,15 @@ document.addEventListener('DOMContentLoaded', async () => {
             },
             zoom: 0.7,
             minZoom: 0.5,
-            maxZoom: 2,
-            wheelSensitivity: 0.1
+            maxZoom: 2
+            // wheelSensitivity: 0.1
+        });
+
+        // Use the 'ready' event to ensure Cytoscape has finished initializing
+        cy.ready(() => {
+            cy.resize(); // Resize to ensure proper dimensions
+            cy.fit();    // Fit the elements to the viewport
+            cy.center(); // Center the graph
         });
 
         Logger.info('Cytoscape initialized with all elements.');

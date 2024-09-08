@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Node Graph Sitemap
  * Description: A plugin to display an interactive node graph of the sitemap.
- * Version: 1.0
+ * Version: 1.0.2
  * Author: Steven Partridge
  * License: GPL-2.0+
  * Text Domain: node-graph-sitemap
