@@ -12,25 +12,18 @@ function node_graph_sitemap_shortcode() {
     ob_start();
     ?>
     <div id="parchment" class="node-graph-container">
-        <!-- Graph container with buttons for fullscreen and reset functionality -->
-        <div id="graph-container">
-            <button id="fullscreen-btn" class="graph-btn" aria-label="Toggle Full Screen">
-                Full Screen
-            </button>
-            <button id="reset-view-btn" class="graph-btn" aria-label="Reset Graph View">
-                Reset
-            </button>
-            <!-- Graph display area -->
-            <div id="cy" style="width: 100%; height: 600px;" aria-live="polite"></div>
-        </div>
+        <!-- Floating buttons to keep them out of the graph's way -->
+        <button id="fullscreen-btn" class="graph-btn" aria-label="Toggle Full Screen">
+            Full Screen
+        </button>
+        <button id="reset-view-btn" class="graph-btn" aria-label="Reset Graph View">
+            Reset
+        </button>
 
-        <!-- SVG filter for a vintage paper effect on the graph container -->
-        <svg style="display: none;">
-            <filter id="wavy2">
-                <feTurbulence x="0" y="0" baseFrequency="0.02" numOctaves="5" seed="1"></feTurbulence>
-                <feDisplacementMap in="SourceGraphic" scale="20" />
-            </filter>
-        </svg>
+        <!-- Expanded graph container -->
+        <div id="graph-container">
+            <div id="cy" aria-live="polite"></div>
+        </div>
     </div>
     <?php
     // Capture and return the output buffer content
